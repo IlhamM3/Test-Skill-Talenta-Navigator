@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @plugin "flowbite-react/plugin/tailwindcss";
 @source "../../.flowbite-react/class-list.json";
+@import "react-datepicker/dist/react-datepicker.css";
 
 body {
   font-family: Arial, Helvetica, sans-serif;
