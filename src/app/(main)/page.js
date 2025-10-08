@@ -7,7 +7,7 @@ import { IoPersonCircleOutline } from "react-icons/io5";
 import { TbArrowsSort } from "react-icons/tb";
 import { AiOutlineExclamationCircle } from "react-icons/ai";
 import { RiDeleteBin5Line } from "react-icons/ri";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import ModalAdd from "./components/Modal/ModalAdd";
 import ModalDelete from "./components/Modal/ModalDelete";
@@ -23,6 +23,9 @@ export default function Home() {
   const [ModalAddId, setModalAddId] = useState(null);
   const [ModalDeleteId, setModalDeleteId] = useState(null);
   const [SearchTitle, setSearchTitle] = useState("");
+  const [HoverColorStatus, setHoverColorStatus] = useState(null);
+  const [HoverColorType, setHoverColorType] = useState(null);
+  const [HoverColorPriority, setHoverColorPriority] = useState(null);
   const [SearchTipe, setSearchTipe] = useState("title");
   const data = useSelector((state) => state.data);
   const dispatch = useDispatch();
@@ -129,29 +132,29 @@ export default function Home() {
       }
     }
   };
-
+  
   const [selectedId, setSelectedId] = useState([]);
+  const [DataOrder, setDataOrder] = useState([]);
+  const [sortOrder, setSortOrder] = useState("asc");
 
-  let isAllSelected;
-  if(data.tasks){
-    isAllSelected = selectedId.length === data.tasks.length;
-  }
+  let isAllSelected = data.tasks && selectedId.length === data.tasks.length;
 
   const handleSelectAll = (e) => {
     if (e.target.checked) {
-      setSelectedId(data.tasks.map((t) => t.id)); 
+      setSelectedId(data.tasks.map((t) => t.id));
     } else {
-      setSelectedId([]); 
+      setSelectedId([]);
     }
   };
 
   const handleSelectRow = (id) => {
     setSelectedId((prev) =>
       prev.includes(id)
-        ? prev.filter((i) => i !== id) 
-        : [...prev, id] 
+        ? prev.filter((i) => i !== id)
+        : [...prev, id]
     );
   };
+
 
   return (
     <>
@@ -287,7 +290,7 @@ export default function Home() {
                     <tbody>
                       {(data.isLoading || !data) && (
                         <tr>
-                          <td colSpan={9} className="border border-gray-500">
+                          <td colSpan={10} className="border border-gray-500">
                             <div className="flex items-center justify-center relative h-24">
                               <div className="h-36 w-36 absolute ">
                                 <Lottie animationData={loading} loop autoplay />
@@ -298,7 +301,7 @@ export default function Home() {
                       )}
                       {data.tasks &&
                       data.isLoading == false &&
-                      SearchTitle &&
+                      SearchTitle  &&
                       DataSearch.length === 0 ? (
                         <tr>
                           <td
@@ -310,7 +313,7 @@ export default function Home() {
                       ) : (
                         data.tasks &&
                         data.isLoading == false &&
-                        (SearchTitle ? DataSearch : data.tasks).map(
+                        (DataSearch.length > 0 ? DataSearch : data.tasks).map(
                           (item, index) => (
                             <tr
                               key={index}
@@ -330,7 +333,6 @@ export default function Home() {
                               >
                                 <input
                                   type="text"
-                                  id="title"
                                   name="title"
                                   value={item.title || ""}
                                   onChange={(e) =>
@@ -349,7 +351,6 @@ export default function Home() {
                                   <IoPersonCircleOutline className="text-xl font-semibold" />
                                   <input
                                     type="text"
-                                    id="developer"
                                     name="developer"
                                     value={item.developer || ""}
                                     onChange={(e) =>
@@ -373,7 +374,6 @@ export default function Home() {
                               >
                                 <select
                                   name="status"
-                                  id="status"
                                   value={item.status || ""}
                                   onChange={(e) =>
                                     handleChangeValue(
@@ -411,7 +411,6 @@ export default function Home() {
                               >
                                 <select
                                   name="priority"
-                                  id="priority"
                                   value={item.priority || ""}
                                   onChange={(e) =>
                                     handleChangeValue(
@@ -449,7 +448,6 @@ export default function Home() {
                               >
                                 <select
                                   name="type"
-                                  id="type"
                                   value={item.type || ""}
                                   onChange={(e) =>
                                     handleChangeValue(
@@ -497,7 +495,6 @@ export default function Home() {
                               <td className="py-2 border border-gray-500 w-34">
                                 <input
                                   type="number"
-                                  id="Estimated"
                                   name="Estimated"
                                   value={item["Estimated SP"]}
                                   onChange={(e) =>
@@ -514,7 +511,6 @@ export default function Home() {
                               <td className="py-2 border border-gray-500 w-32">
                                 <input
                                   type="number"
-                                  id="Actual"
                                   name="Actual"
                                   value={item["Actual SP"]}
                                   onChange={(e) =>
@@ -559,14 +555,20 @@ export default function Home() {
                         <td></td>
                         <td></td>
                         <td className="px-3 py-2 rounded-bl-md bg-gray-200"></td>
-                        <td className="px-2 py-2 border border-gray-500 bg-gray-200">
-                          <div className="flex justify-center">
+                        <td className="px-2 py-2 border border-gray-500 bg-gray-200 relative">
+                          <div className="flex justify-center ">
                             {colorStatus.map((item, index) => (
                               <div
                                 key={index}
-                                className={`h-7 ${item.color}`}
+                                onMouseEnter={() => setHoverColorStatus(index)}
+                                onMouseLeave={() => setHoverColorStatus(null)}
+                                className={`h-7 ${item.color} relative`}
                                 style={{ width: `${item.persen}%` }}
-                              ></div>
+                              >
+                                {HoverColorStatus == index && (
+                                  <div className="absolute z-50 py-1 px-1 -top-7 bg-white border rounded-md text-xs">{item.persen}%</div>
+                                )}
+                              </div>
                             ))}
                           </div>
                         </td>
@@ -576,9 +578,15 @@ export default function Home() {
                             {colorPriority.map((item, index) => (
                               <div
                                 key={index}
-                                className={`h-7 ${item.color}`}
+                                onMouseEnter={() => setHoverColorPriority(index)}
+                                onMouseLeave={() => setHoverColorPriority(null)}
+                                className={`h-7 ${item.color} relative`}
                                 style={{ width: `${item.persen}%` }}
-                              ></div>
+                              >
+                                {HoverColorPriority == index && (
+                                  <div className="absolute z-50 py-1 px-1 -top-7 bg-white border rounded-md text-xs">{item.persen}%</div>
+                                )}
+                              </div>
                             ))}
                           </div>
                         </td>
@@ -587,9 +595,15 @@ export default function Home() {
                             {colorType.map((item, index) => (
                               <div
                                 key={index}
-                                className={`h-7 ${item.color}`}
+                                onMouseEnter={() => setHoverColorType(index)}
+                                onMouseLeave={() => setHoverColorType(null)}
+                                className={`h-7 ${item.color} relative`}
                                 style={{ width: `${item.persen}%` }}
-                              ></div>
+                              >
+                                {HoverColorType == index && (
+                                  <div className="absolute z-50 py-1 px-1 -top-7 bg-white border rounded-md text-xs">{item.persen}%</div>
+                                )}
+                              </div>
                             ))}
                           </div>
                         </td>
